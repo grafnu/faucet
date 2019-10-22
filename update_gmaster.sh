@@ -30,6 +30,8 @@ if [ -n "$files" ]; then
     false
 fi
 
+git remote -v | egrep ^origin | fgrep \(fetch >> $VTEMP
+
 echo Fetching remote repos...
 git fetch
 
