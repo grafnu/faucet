@@ -1,13 +1,14 @@
 #!/bin/bash -e
 
 # Update this to reflect the feature branches that should be merged in.
+PROJ=faucet
 BRANCHES="maxlldp events"
 
 TMP_SH=/tmp/update_gmaster.sh
 BASE=`git rev-parse --show-toplevel`
 BASE_SH=$BASE/update_gmaster.sh
 VTEMP=/tmp/GVERSION
-VFILE=$BASE/faucet/GVERSION
+VFILE=$BASE/$PROJ/GVERSION
 date > $VTEMP
 
 if [ $0 != $TMP_SH ]; then
