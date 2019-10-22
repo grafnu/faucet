@@ -33,6 +33,7 @@ if [ -n "$files" ]; then
 fi
 
 ORIGIN=`git remote -v | egrep ^origin | fgrep fetch | awk '{print $2}'`
+echo origin $ORIGIN >> $VTEMP
 if [ "$ORIGIN" != "$REPO" ]; then
     echo git origin $ORIGIN does not match expected $REPO
     false
