@@ -50,7 +50,7 @@ if [ "$LOCAL" != "$REMOTE" ]; then
 fi
 
 echo Switching to gmaster branch...
-git checkout origin gmaster
+git checkout gmaster
 
 echo Creating clean clone of master...
 git reset --hard origin/master
