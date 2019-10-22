@@ -34,10 +34,11 @@ echo Fetching remote repos...
 git fetch
 
 LOCAL=`git rev-parse gupdater`
+echo $LOCAL gupdater >> $VTEMP
 REMOTE=`git rev-parse origin/gupdater`
 if [ "$LOCAL" != "$REMOTE" ]; then
-    echo Local branch gupdater out of sync with origin/gupdater.
-    #false
+    echo gupdater out of sync with upstream origin/gupdater
+    false
 fi
 
 echo Switching to gmaster branch...
