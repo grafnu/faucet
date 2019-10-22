@@ -39,7 +39,7 @@ if [ "$ORIGIN" != "$REPO" ]; then
 fi
 
 echo Fetching remote repos...
-git fetch
+git fetch origin
 
 LOCAL=`git rev-parse gupdater`
 echo $LOCAL gupdater >> $VTEMP
@@ -50,7 +50,7 @@ if [ "$LOCAL" != "$REMOTE" ]; then
 fi
 
 echo Switching to gmaster branch...
-git checkout gmaster
+git checkout origin gmaster
 
 echo Creating clean clone of master...
 git reset --hard origin/master
