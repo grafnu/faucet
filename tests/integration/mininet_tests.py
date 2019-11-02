@@ -7551,7 +7551,7 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
             conf, self.faucet_config_path,
             restart=True, cold_start=False, change_expected=True)
 
-    def verify_protected_connectivity(self, externals_down=None):
+    def verify_protected_connectivity(self):
         self.verify_stack_up()
         int_hosts, ext_hosts, dp_hosts = self.map_int_ext_hosts()
 
@@ -7569,17 +7569,10 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
             for other_ext_host in ext_hosts - {ext_host}:
                 self.verify_broadcast(hosts=(ext_host, other_ext_host), broadcast_expected=False)
 
-        for local_dp_name in dp_hosts:
-            local_int_hosts, local_ext_hosts = dp_hosts[local_dp_name]
-            local_int_host = list(local_int_hosts)[0]
-            remote_ext_hosts = ext_hosts - local_ext_hosts
-            # ext hosts on remote switch should not get traffic flooded from
-            # int host on local switch, because traffic already flooded to
-            # an ext host on local switch, unless all local externals are down.
-            broadcast_expected = bool(externals_down) and local_dp_name in externals_down
-            for remote_ext_host in remote_ext_hosts:
-                self.verify_broadcast(hosts=(local_int_host, remote_ext_host),
-                                      broadcast_expected=broadcast_expected)
+            # All external hosts can reach internal hosts
+            for int_host in int_hosts:
+                self.verify_broadcast(hosts=(ext_host, int_host), broadcast_expected=True)
+                self.one_ipv4_ping(ext_host, int_host.IP())
 
     def set_externals_state(self, dp_name, externals_up):
         """Set the port up/down state of all external ports on a switch"""
@@ -7599,7 +7592,7 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
         # Currently faucet does not do the right thing in this situation.
         # Setting up test to expect failure, as prep for proper code fix.
         try:
-            self.verify_protected_connectivity(externals_down=['faucet-2'])
+            self.verify_protected_connectivity()
         except AssertionError:
             # TODO: Fix faucet code then remove try.
             return
