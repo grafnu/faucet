@@ -7585,18 +7585,27 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
                     self.set_port_down(port_num, dp_conf.get('dp_id'))
 
     def test_missing_ext(self):
-        """Test stacked dp with all external ports down on non-root switch"""
-
-        self.set_externals_state('faucet-2', False)
+        """Test stacked dp with all external ports down on a switch"""
 
         # Currently faucet does not do the right thing in this situation.
         # Setting up test to expect failure, as prep for proper code fix.
+
+        self.set_externals_state('faucet-1', False)
+        asserted1 = False
         try:
             self.verify_protected_connectivity()
         except AssertionError:
-            # TODO: Fix faucet code then remove try.
-            return
-        self.assertTrue(False, 'Expected failure did not hapen')
+            asserted1 = True
+        self.assertTrue(asserted1, 'Expected failure did not hapen')
+
+        self.set_externals_state('faucet-1', True)
+        self.set_externals_state('faucet-2', False)
+        asserted2 = False
+        try:
+            self.verify_protected_connectivity()
+        except AssertionError:
+            asserted2 = True
+        self.assertTrue(asserted2, 'Expected failure did not hapen')
 
 class FaucetSingleStackStringOf3DPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
     """Test topology of stacked datapaths with untagged hosts."""
