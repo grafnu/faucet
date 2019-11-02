@@ -7521,6 +7521,30 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
             use_external=True)
         self.start_net()
 
+    def test_untagged(self):
+        """Host can reach each other, unless both marked loop_protect_external"""
+        for host in self.hosts_name_ordered():
+            self.require_host_learned(host)
+
+        # Part 1: Make sure things are connected properly.
+        self.verify_protected_connectivity()  # Before reload
+
+        # Part 2: Test the code on pipeline reconfiguration path.
+        conf = self._get_faucet_conf()
+        loop_interface = None
+        for interface, interface_conf in conf['dps']['faucet-2']['interfaces'].items():
+            if 'stack' in interface_conf:
+                continue
+            if not interface_conf.get('loop_protect_external', False):
+                loop_interface = interface
+                break
+
+        self._mark_external(loop_interface, True)
+        self._mark_external(loop_interface, False)
+
+        # Part 3: Make sure things are the same after reload.
+        self.verify_protected_connectivity()  # After reload
+
     def _mark_external(self, loop_interface, protect_external):
         conf = self._get_faucet_conf()
         conf['dps']['faucet-2']['interfaces'][loop_interface]['loop_protect_external'] = protect_external
@@ -7557,30 +7581,6 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
             for remote_ext_host in remote_ext_hosts:
                 self.verify_broadcast(hosts=(local_int_host, remote_ext_host),
                                       broadcast_expected=broadcast_expected)
-
-    def test_untagged(self):
-        """Host can reach each other, unless both marked loop_protect_external"""
-        for host in self.hosts_name_ordered():
-            self.require_host_learned(host)
-
-        # Part 1: Make sure things are connected properly.
-        self.verify_protected_connectivity()  # Before reload
-
-        # Part 2: Test the code on pipeline reconfiguration path.
-        conf = self._get_faucet_conf()
-        loop_interface = None
-        for interface, interface_conf in conf['dps']['faucet-2']['interfaces'].items():
-            if 'stack' in interface_conf:
-                continue
-            if not interface_conf.get('loop_protect_external', False):
-                loop_interface = interface
-                break
-
-        self._mark_external(loop_interface, True)
-        self._mark_external(loop_interface, False)
-
-        # Part 3: Make sure things are the same after reload.
-        self.verify_protected_connectivity()  # After reload
 
     def set_externals_state(self, dp_name, externals_up):
         """Set the port up/down state of all external ports on a switch"""
