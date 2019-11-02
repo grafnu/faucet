@@ -7594,6 +7594,7 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
         self.set_externals_state('faucet-2', False)
         self.verify_protected_connectivity()
 
+
 class FaucetSingleStackStringOf3DPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
     """Test topology of stacked datapaths with untagged hosts."""
 
