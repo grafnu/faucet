@@ -7588,11 +7588,11 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
         """Test stacked dp with all external ports down on a switch"""
 
         self.set_externals_state('faucet-1', False)
-        self.verify_protected_connectivity()
+        self.verify_protected_connectivity()  # faucet-1 down
         self.set_externals_state('faucet-1', True)
 
         self.set_externals_state('faucet-2', False)
-        self.verify_protected_connectivity()
+        self.verify_protected_connectivity()  # faucet-2 down
 
 
 class FaucetSingleStackStringOf3DPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
