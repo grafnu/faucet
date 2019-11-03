@@ -193,10 +193,11 @@ class FaucetTestBase(unittest.TestCase):
             self.tmpdir, 'gauge-ports.txt')
         self.monitor_state_file = os.path.join(
             self.tmpdir, 'gauge-state.txt')
-        self.monitor_flow_table_file = os.path.join(
-            self.tmpdir, 'gauge-flow.txt')
+        self.monitor_flow_table_dir = os.path.join(
+            self.tmpdir, 'gauge-flow')
         self.monitor_meter_stats_file = os.path.join(
             self.tmpdir, 'gauge-meter.txt')
+        os.mkdir(self.monitor_flow_table_dir)
         if self.config is not None:
             if 'hw_switch' in self.config:
                 self.hw_switch = self.config['hw_switch']
@@ -288,7 +289,7 @@ class FaucetTestBase(unittest.TestCase):
             self.faucet_config_path,
             self.monitor_stats_file,
             self.monitor_state_file,
-            self.monitor_flow_table_file)
+            self.monitor_flow_table_dir)
         if self.config_ports:
             gauge_config = gauge_config % self.config_ports
         self._write_yaml_conf(self.gauge_config_path, yaml.safe_load(gauge_config))
@@ -797,13 +798,13 @@ dps:
         dps: ['%s']
         type: 'flow_table'
         interval: 5
-        db: 'flow_file'
+        db: 'flow_dir'
 """ % (self.DP_NAME, self.DP_NAME, self.DP_NAME)
 
     def get_gauge_config(self, faucet_config_file,
                          monitor_stats_file,
                          monitor_state_file,
-                         monitor_flow_table_file):
+                         monitor_flow_table_dir):
         """Build Gauge config."""
         return """
 faucet_configs:
@@ -817,16 +818,16 @@ dbs:
     state_file:
         type: 'text'
         file: %s
-    flow_file:
+    flow_dir:
         type: 'text'
-        file: %s
+        path: %s
 %s
 """ % (faucet_config_file,
-       self.get_gauge_watcher_config(),
-       monitor_stats_file,
-       monitor_state_file,
-       monitor_flow_table_file,
-       self.GAUGE_CONFIG_DBS)
+            self.get_gauge_watcher_config(),
+            monitor_stats_file,
+            monitor_state_file,
+            monitor_flow_table_dir,
+            self.GAUGE_CONFIG_DBS)
 
     @staticmethod
     def get_exabgp_conf(peer, peer_config=''):
@@ -1310,14 +1311,15 @@ dbs:
         watcher_files = set([
             self.monitor_stats_file,
             self.monitor_state_file,
-            self.monitor_flow_table_file])
+            ])
         found_watcher_files = set()
         for _ in range(60):
             for watcher_file in watcher_files:
                 if (os.path.exists(watcher_file)
                         and os.path.getsize(watcher_file)):
                     found_watcher_files.add(watcher_file)
-            if watcher_files == found_watcher_files:
+            if watcher_files == found_watcher_files \
+                    and bool(os.listdir(self.monitor_flow_table_dir)):
                 break
             self.verify_no_exception(self.env['gauge']['GAUGE_EXCEPTION_LOG'])
             time.sleep(1)
@@ -1677,8 +1679,8 @@ dbs:
             for host, mac_intf, mac_ipv4 in learn_host_list:
                 fping_conf_start = time.time()
                 self.add_macvlan(host, mac_intf, mac_ipv4, ipm=test_net.prefixlen)
-                host.cmd('%s -I%s %s' % (fping_prefix, mac_intf, str(learn_ip)))
                 simplify_intf_conf(host, mac_intf)
+                host.cmd('%s -I%s %s' % (fping_prefix, mac_intf, str(learn_ip)))
                 fping_ms = (time.time() - fping_conf_start) * 1e3
                 if fping_ms < pps_ms:
                     time.sleep((pps_ms - fping_ms) / 1e3)
@@ -1693,8 +1695,8 @@ dbs:
                     unverified_ips = set()
                     for _ in range(min(learn_pps, len(all_unverified_ips))):
                         unverified_ips.add(all_unverified_ips.pop())
-                    error('.')
                     for _ in range(10):
+                        error('.')
                         random_unverified_ips = list(unverified_ips)
                         random.shuffle(random_unverified_ips)
                         fping_cmd = '%s %s' % (fping_prefix, ' '.join(random_unverified_ips))
@@ -1711,13 +1713,11 @@ dbs:
                         else:
                             break
                     if unverified_ips:
-                        error('could not verify connectivity for all hosts\n')
+                        error('could not verify connectivity for all hosts: %s\n' % unverified_ips)
                         return False
 
-                mininet_hosts = len(self.hosts_name_ordered())
-                target_hosts = learn_hosts + mininet_hosts
                 return self.wait_for_prometheus_var(
-                    'vlan_hosts_learned', target_hosts, labels={'vlan': '100'},
+                    'vlan_hosts_learned', learn_hosts, labels={'vlan': '100'},
                     timeout=15, orgreater=True)
 
             if verify_connectivity(learn_hosts):
@@ -1729,7 +1729,7 @@ dbs:
                 learn_hosts = min(learn_hosts * 2, max_hosts)
             else:
                 break
-        self.assertTrue(successful_learn_hosts >= min_hosts, msg=str(successful_learn_hosts))
+        self.assertGreaterEqual(successful_learn_hosts, min_hosts)
 
     def verify_vlan_flood_limited(self, vlan_first_host, vlan_second_host,
                                   other_vlan_host):

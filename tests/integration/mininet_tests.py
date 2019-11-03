@@ -138,7 +138,7 @@ vlans:
         self.start_net()
 
     def verify_events_log(self, event_log, timeout=10):
-        required_events = set(['CONFIG_CHANGE', 'PORT_CHANGE', 'L2_LEARN', 'PORTS_STATUS'])
+        required_events = {'CONFIG_CHANGE', 'PORT_CHANGE', 'L2_LEARN', 'PORTS_STATUS'}
         for _ in range(timeout):
             prom_event_id = self.scrape_prometheus_var('faucet_event_id', dpid=False)
             event_id = None
@@ -146,10 +146,7 @@ vlans:
                 for event_log_line in event_log_file.readlines():
                     event = json.loads(event_log_line.strip())
                     event_id = event['event_id']
-                    for required_event in list(required_events):
-                        if required_event in required_events:
-                            required_events.remove(required_event)
-                            break
+                    required_events -= set(event.keys())
             if prom_event_id == event_id:
                 return
             time.sleep(1)
@@ -4059,7 +4056,10 @@ vlans:
     def test_fping_controller(self):
         first_host = self.hosts_name_ordered()[0]
         self.one_ipv4_controller_ping(first_host)
+        # Try 64 byte icmp packets
         self.verify_controller_fping(first_host, self.FAUCET_VIPV4)
+        # Try 128 byte icmp packets
+        self.verify_controller_fping(first_host, self.FAUCET_VIPV4, size=128)
 
 
 class FaucetUntaggedIPv6RATest(FaucetUntaggedTest):
@@ -4220,7 +4220,10 @@ vlans:
         first_host = self.hosts_name_ordered()[0]
         self.add_host_ipv6_address(first_host, 'fc00::1:1/112')
         self.one_ipv6_controller_ping(first_host)
+        # Try 64 byte icmp6 packets
         self.verify_controller_fping(first_host, self.FAUCET_VIPV6)
+        # Try 128 byte icmp6 packets
+        self.verify_controller_fping(first_host, self.FAUCET_VIPV6, size=128)
 
 
 class FaucetTaggedAndUntaggedDiffVlanTest(FaucetTest):
@@ -5740,6 +5743,11 @@ vlans:
 """
 
     def test_tagged(self):
+        event_log = os.path.join(self.tmpdir, 'event.log')
+        controller = self._get_controller()
+        sock = self.env['faucet']['FAUCET_EVENT_SOCK']
+        controller.cmd(mininet_test_util.timeout_cmd(
+            'nc -U %s > %s &' % (sock, event_log), 120))
         host_pair = self.hosts_name_ordered()[:2]
         first_host, second_host = host_pair
         first_host_routed_ip = ipaddress.ip_interface('10.0.1.1/24')
@@ -5756,6 +5764,8 @@ vlans:
             self.change_port_config(
                 self.port_map['port_4'], 'native_vlan', vid,
                 restart=True, cold_start=False)
+        self.wait_until_matching_lines_from_file(
+            r'.+L3_LEARN.+10.0.0.[12].+', event_log)
 
 
 class FaucetTaggedTargetedResolutionIPv4RouteTest(FaucetTaggedIPv4RouteTest):
@@ -7584,16 +7594,17 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
                 else:
                     self.set_port_down(port_num, dp_conf.get('dp_id'))
 
+    def _validate_with_externals_down(self, dp_name):
+        """Check situation when all externals on a given dp are down"""
+        self.set_externals_state(dp_name, False)
+        self.verify_protected_connectivity()
+        self.set_externals_state(dp_name, True)
+
     def test_missing_ext(self):
         """Test stacked dp with all external ports down on a switch"""
 
-        self.set_externals_state('faucet-1', False)
-        self.verify_protected_connectivity()  # faucet-1 down
-        self.set_externals_state('faucet-1', True)
-
-        self.set_externals_state('faucet-2', False)
-        self.verify_protected_connectivity()  # faucet-2 down
-
+        self._validate_with_externals_down('faucet-1')
+        self._validate_with_externals_down('faucet-2')
 
 class FaucetSingleStackStringOf3DPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
     """Test topology of stacked datapaths with untagged hosts."""
