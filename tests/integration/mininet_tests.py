@@ -7594,18 +7594,18 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
                 else:
                     self.set_port_down(port_num, dp_conf.get('dp_id'))
 
-    def _validate_with_externals_down_actual(self, dp_name):
+    def _validate_with_externals_down(self, dp_name):
         """Check situation when all externals on a given dp are down"""
         self.set_externals_state(dp_name, False)
         self.verify_protected_connectivity()
         self.set_externals_state(dp_name, True)
 
-    def _validate_with_externals_down(self, dp_name):
+    def _validate_with_externals_down_fails(self, dp_name):
         """Faucet code is not currently correct, so expect to fail."""
         # TODO: Fix faucet so the test inversion is no longer required.
         asserted = False
         try:
-            self._validate_with_externals_down_actual(dp_name)
+            self._validate_with_externals_down(dp_name)
         except AssertionError:
             asserted = True
         self.assertTrue(asserted, 'Did not fail as expected for %s' % dp_name)
@@ -7613,8 +7613,8 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
     def test_missing_ext(self):
         """Test stacked dp with all external ports down on a switch"""
 
-        self._validate_with_externals_down('faucet-1')
-        self._validate_with_externals_down('faucet-2')
+        self._validate_with_externals_down_fails('faucet-1')
+        self._validate_with_externals_down_fails('faucet-2')
 
 class FaucetSingleStackStringOf3DPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
     """Test topology of stacked datapaths with untagged hosts."""
