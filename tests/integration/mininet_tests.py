@@ -7611,17 +7611,12 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
             conf, self.faucet_config_path,
             restart=True, cold_start=False, change_expected=True)
 
-    def _validate_with_externals_down(self, dp_name):
-        """Check situation when all externals on a given dp are down"""
-        self.set_externals_state(dp_name, False)
-        self.verify_protected_connectivity()
-        self.set_externals_state(dp_name, True)
-
     def test_missing_ext(self):
         """Test stacked dp with all external ports down on a switch"""
 
         self.validate_with_externals_down_fails('faucet-1')
         self.validate_with_externals_down('faucet-2')
+
 
 class FaucetSingleStackStringOf3DPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
     """Test topology of stacked datapaths with untagged hosts."""
