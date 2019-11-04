@@ -7023,6 +7023,55 @@ class FaucetStringOfDPTest(FaucetTest):
             ext_hosts.update(dp_ext_hosts)
         return int_hosts, ext_hosts, dp_hosts
 
+    def verify_protected_connectivity(self):
+        self.verify_stack_up()
+        int_hosts, ext_hosts, dp_hosts = self.map_int_ext_hosts()
+
+        for int_host in int_hosts:
+            # All internal hosts can reach other internal hosts.
+            for other_int_host in int_hosts - {int_host}:
+                self.verify_broadcast(hosts=(int_host, other_int_host), broadcast_expected=True)
+                self.one_ipv4_ping(int_host, other_int_host.IP())
+
+            # All internal hosts can reach exactly one external host.
+            self.verify_one_broadcast(int_host, ext_hosts)
+
+        for ext_host in ext_hosts:
+            # All external hosts cannot flood to each other.
+            for other_ext_host in ext_hosts - {ext_host}:
+                self.verify_broadcast(hosts=(ext_host, other_ext_host), broadcast_expected=False)
+
+            # All external hosts can reach internal hosts.
+            for int_host in int_hosts:
+                self.verify_broadcast(hosts=(ext_host, int_host), broadcast_expected=True)
+                self.one_ipv4_ping(ext_host, int_host.IP())
+
+    def set_externals_state(self, dp_name, externals_up):
+        """Set the port up/down state of all external ports on a switch"""
+        dp_conf = self._get_faucet_conf()['dps'][dp_name]
+        for port_num, port_conf in dp_conf['interfaces'].items():
+            if port_conf.get('loop_protect_external'):
+                if externals_up:
+                    self.set_port_up(port_num, dp_conf.get('dp_id'))
+                else:
+                    self.set_port_down(port_num, dp_conf.get('dp_id'))
+
+    def validate_with_externals_down(self, dp_name):
+        """Check situation when all externals on a given dp are down"""
+        self.set_externals_state(dp_name, False)
+        self.verify_protected_connectivity()
+        self.set_externals_state(dp_name, True)
+
+    def validate_with_externals_down_fails(self, dp_name):
+        """Faucet code is not currently correct, so expect to fail."""
+        # TODO: Fix faucet so the test inversion is no longer required.
+        asserted = False
+        try:
+            self.validate_with_externals_down(dp_name)
+        except AssertionError:
+            asserted = True
+        self.assertTrue(asserted, 'Did not fail as expected for %s' % dp_name)
+
 
 class FaucetSingleUntaggedIPV4RoutingWithStackingTest(FaucetStringOfDPTest):
     """IPV4 intervlan routing with stacking test"""
@@ -7561,50 +7610,12 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
             conf, self.faucet_config_path,
             restart=True, cold_start=False, change_expected=True)
 
-    def verify_protected_connectivity(self):
-        self.verify_stack_up()
-        int_hosts, ext_hosts, dp_hosts = self.map_int_ext_hosts()
-
-        for int_host in int_hosts:
-            # All internal hosts can reach other internal hosts.
-            for other_int_host in int_hosts - {int_host}:
-                self.verify_broadcast(hosts=(int_host, other_int_host), broadcast_expected=True)
-                self.one_ipv4_ping(int_host, other_int_host.IP())
-
-            # All internal hosts can reach exactly one external host.
-            self.verify_one_broadcast(int_host, ext_hosts)
-
-        for ext_host in ext_hosts:
-            # All external hosts cannot flood to each other.
-            for other_ext_host in ext_hosts - {ext_host}:
-                self.verify_broadcast(hosts=(ext_host, other_ext_host), broadcast_expected=False)
-
-            # All external hosts can reach internal hosts.
-            for int_host in int_hosts:
-                self.verify_broadcast(hosts=(ext_host, int_host), broadcast_expected=True)
-                self.one_ipv4_ping(ext_host, int_host.IP())
-
-    def set_externals_state(self, dp_name, externals_up):
-        """Set the port up/down state of all external ports on a switch"""
-        dp_conf = self._get_faucet_conf()['dps'][dp_name]
-        for port_num, port_conf in dp_conf['interfaces'].items():
-            if port_conf.get('loop_protect_external'):
-                if externals_up:
-                    self.set_port_up(port_num, dp_conf.get('dp_id'))
-                else:
-                    self.set_port_down(port_num, dp_conf.get('dp_id'))
-
-    def _validate_with_externals_down(self, dp_name):
-        """Check situation when all externals on a given dp are down"""
-        self.set_externals_state(dp_name, False)
-        self.verify_protected_connectivity()
-        self.set_externals_state(dp_name, True)
-
     def test_missing_ext(self):
         """Test stacked dp with all external ports down on a switch"""
 
-        self._validate_with_externals_down('faucet-1')
-        self._validate_with_externals_down('faucet-2')
+        self.validate_with_externals_down('faucet-1')
+        self.validate_with_externals_down('faucet-2')
+
 
 class FaucetSingleStackStringOf3DPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
     """Test topology of stacked datapaths with untagged hosts."""
