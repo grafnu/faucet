@@ -49,11 +49,11 @@ echo Switching to gmaster branch...
 git checkout gmaster
 
 echo Creating clean clone of master...
-git reset --hard $REPO/master
+git reset --hard LAST_RELEASE
 echo `git rev-parse HEAD` master >> $VTEMP
 
 echo Merging feature branches...
-for branch in gmaster $BRANCHES; do
+for branch in $BRANCHES; do
     echo Merging $REPO/$branch...
     git merge --no-edit $REPO/$branch
     echo `git rev-parse $REPO/$branch` $branch >> $VTEMP
