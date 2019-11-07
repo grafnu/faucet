@@ -416,7 +416,7 @@ class ValveFloodStackManagerBase(ValveFloodManager):
     def _build_flood_rule_actions(self, vlan, exclude_unicast, in_port,
                                   exclude_all_external=False, exclude_restricted_bcast_arpnd=False):
         exclude_ports = self._inactive_away_stack_ports()
-        external_ports = vlan.loop_protect_external_ports()
+        external_ports = vlan.loop_protect_external_ports_up()
 
         if in_port and in_port in self.stack_ports:
             in_port_peer_dp = in_port.stack['dp']
