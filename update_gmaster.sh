@@ -53,6 +53,7 @@ git reset --hard $REPO/master
 echo `git rev-parse HEAD` master >> $VTEMP
 
 echo Merging feature branches...
+ALL_BRANCHES="gmaster $BRANCHES gupdater"
 for branch in $BRANCHES; do
     echo Merging $REPO/$branch...
     git merge --no-edit $REPO/$branch
@@ -65,4 +66,4 @@ git add $VFILE
 git commit -m "Adding version history"
 
 echo Done with clean gmaster merge.
-echo You will likely need to force push.
+echo Now time to validate and push!
