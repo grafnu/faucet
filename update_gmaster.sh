@@ -53,8 +53,7 @@ git reset --hard $REPO/master
 echo `git rev-parse HEAD` master >> $VTEMP
 
 echo Merging feature branches...
-ALL_BRANCHES="gmaster $BRANCHES gupdater"
-for branch in $BRANCHES; do
+for branch in gmaster $BRANCHES; do
     echo Merging $REPO/$branch...
     git merge --no-edit $REPO/$branch
     echo `git rev-parse $REPO/$branch` $branch >> $VTEMP
