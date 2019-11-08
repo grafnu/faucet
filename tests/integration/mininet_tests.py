@@ -7579,7 +7579,7 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
             use_external=True)
         self.start_net()
 
-    def test_untagged(self):
+    def x_test_untagged(self):
         """Host can reach each other, unless both marked loop_protect_external"""
         for host in self.hosts_name_ordered():
             self.require_host_learned(host)
@@ -7614,7 +7614,7 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
         """Test stacked dp with all external ports down on a switch"""
 
         self.validate_with_externals_down_fails('faucet-1')
-        self.validate_with_externals_down_fails('faucet-2')
+        self.validate_with_externals_down('faucet-2')
 
 
 class FaucetSingleStackStringOf3DPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
