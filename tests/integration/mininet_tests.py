@@ -7062,16 +7062,6 @@ class FaucetStringOfDPTest(FaucetTest):
         self.verify_protected_connectivity()
         self.set_externals_state(dp_name, True)
 
-    def validate_with_externals_down_fails(self, dp_name):
-        """Faucet code is not currently correct, so expect to fail."""
-        # TODO: Fix faucet so the test inversion is no longer required.
-        asserted = False
-        try:
-            self.validate_with_externals_down(dp_name)
-        except AssertionError:
-            asserted = True
-        self.assertTrue(asserted, 'Did not fail as expected for %s' % dp_name)
-
 
 class FaucetSingleUntaggedIPV4RoutingWithStackingTest(FaucetStringOfDPTest):
     """IPV4 intervlan routing with stacking test"""
@@ -7613,8 +7603,17 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
     def test_missing_ext(self):
         """Test stacked dp with all external ports down on a switch"""
 
-        self.validate_with_externals_down_fails('faucet-1')
         self.validate_with_externals_down('faucet-2')
+
+        # Faucet code is not currently correct, so expect this to fail.
+        # Have to do this after any passing tests since after the state is corrupted.
+        # TODO: Fix faucet so the test inversion is no longer required.
+        asserted = False
+        try:
+            self.validate_with_externals_down('faucet-1')
+        except AssertionError:
+            asserted = True
+        self.assertTrue(asserted, 'Did not fail as expected for %s' % dp_name)
 
 
 class FaucetSingleStackStringOf3DPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
