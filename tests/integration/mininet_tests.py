@@ -7023,7 +7023,7 @@ class FaucetStringOfDPTest(FaucetTest):
             ext_hosts.update(dp_ext_hosts)
         return int_hosts, ext_hosts, dp_hosts
 
-    def verify_protected_connectivity(self):
+    def verify_protected_connectivity(self, ignore_ext_from=None):
         self.verify_stack_up()
         int_hosts, ext_hosts, dp_hosts = self.map_int_ext_hosts()
 
@@ -7036,7 +7036,8 @@ class FaucetStringOfDPTest(FaucetTest):
             # All internal hosts can reach exactly one external host.
             self.verify_one_broadcast(int_host, ext_hosts)
 
-        for ext_host in ext_hosts:
+        exclude_hosts = dp_hosts[ignore_ext_from][1] if ignore_ext_from else {}
+        for ext_host in ext_hosts - {exclude_hosts}:
             # All external hosts cannot flood to each other.
             for other_ext_host in ext_hosts - {ext_host}:
                 self.verify_broadcast(hosts=(ext_host, other_ext_host), broadcast_expected=False)
@@ -7059,7 +7060,7 @@ class FaucetStringOfDPTest(FaucetTest):
     def validate_with_externals_down(self, dp_name):
         """Check situation when all externals on a given dp are down"""
         self.set_externals_state(dp_name, False)
-        self.verify_protected_connectivity()
+        self.verify_protected_connectivity(ignore_ext_from=dp_name)
         self.set_externals_state(dp_name, True)
 
 
