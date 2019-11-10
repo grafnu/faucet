@@ -7036,8 +7036,8 @@ class FaucetStringOfDPTest(FaucetTest):
             # All internal hosts can reach exactly one external host.
             self.verify_one_broadcast(int_host, ext_hosts)
 
-        exclude_hosts = dp_hosts[ignore_ext_from][1] if ignore_ext_from else {}
-        for ext_host in ext_hosts - {exclude_hosts}:
+        exclude_hosts = dp_hosts[ignore_ext_from][1] if ignore_ext_from else set()
+        for ext_host in ext_hosts - exclude_hosts:
             # All external hosts cannot flood to each other.
             for other_ext_host in ext_hosts - {ext_host}:
                 self.verify_broadcast(hosts=(ext_host, other_ext_host), broadcast_expected=False)
