@@ -7614,7 +7614,7 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
             self.validate_with_externals_down('faucet-1')
         except AssertionError:
             asserted = True
-        self.assertTrue(asserted, 'Did not fail as expected for %s' % dp_name)
+        self.assertTrue(asserted, 'Did not fail as expected')
 
 
 class FaucetSingleStackStringOf3DPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
