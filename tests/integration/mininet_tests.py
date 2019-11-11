@@ -7616,6 +7616,21 @@ class FaucetSingleStackStringOfDPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
             asserted = True
         self.assertTrue(asserted, 'Did not fail as expected')
 
+    def test_missing_ext2(self):
+        """Test stacked dp with all external ports down on a switch"""
+
+        self.validate_with_externals_down('faucet-1')
+
+        # Faucet code is not currently correct, so expect this to fail.
+        # Have to do this after any passing tests since after the state is corrupted.
+        # TODO: Fix faucet so the test inversion is no longer required.
+        asserted = False
+        try:
+            self.validate_with_externals_down('faucet-2')
+        except AssertionError:
+            asserted = True
+        self.assertTrue(asserted, 'Did not fail as expected')
+
 
 class FaucetSingleStackStringOf3DPExtLoopProtUntaggedTest(FaucetStringOfDPTest):
     """Test topology of stacked datapaths with untagged hosts."""

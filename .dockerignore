@@ -2,3 +2,4 @@ faucet/*pyc
 tests/*pyc
 faucet/*/*pyc
 tests/*/*pyc
+test_results/
