@@ -19,7 +19,7 @@ fi
 
 branch=`git rev-parse --abbrev-ref HEAD`
 if [ "$branch" != "gupdater" ]; then
-    echo $0 should be run from the gupdater branch.
+    echo $0 should be run from the gupdater branch, not $branch.
     false
 fi
 
