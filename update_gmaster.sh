@@ -62,7 +62,7 @@ done
 echo `git rev-parse HEAD` gmaster >> $VTEMP
 cp $VTEMP $VFILE
 git add $VFILE
-git commit -m "Adding version history"
+git commit -m "Version assembled $(date)"
 
 echo Done with clean gmaster merge.
 echo Now time to validate and push!
