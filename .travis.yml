@@ -1,4 +1,4 @@
-dist: xenial
+dist: bionic
 sudo: required
 addons:
   apt:
@@ -17,10 +17,8 @@ env:
     - FAUCET_TEST_IMG=faucet/tests
     - MATRIX_SHARDS=6
 script:
-  - ./update_gmaster.sh
+  - date
 matrix:
   include:
 jobs:
   include:
-    - stage: test
-      language: bash
