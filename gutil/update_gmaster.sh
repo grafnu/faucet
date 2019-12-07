@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-source update_gmaster.cfg
+source gutil/update_gmaster.cfg
 
 TMP_SH=/tmp/update_gmaster.sh
 BASE=`git rev-parse --show-toplevel`
@@ -10,11 +10,17 @@ VFILE=$BASE/$PROJ/GVERSION
 date > $VTEMP
 UPSTREAM=`git rev-parse --abbrev-ref gupdater@{upstream}`
 REPO=${UPSTREAM%/*}
+BASELINE=gmaster
 
 if [ $0 != $TMP_SH ]; then
     echo Running out of $TMP_SH to mask local churn...
     cp $0 $TMP_SH
-    $TMP_SH; false
+    $TMP_SH $*; false
+fi
+
+if [ "$1" == reset ]; then
+    echo Reset to using master as baseline...
+    BASELINE=master
 fi
 
 branch=`git rev-parse --abbrev-ref HEAD`
@@ -48,9 +54,9 @@ fi
 echo Switching to gmaster branch...
 git checkout gmaster
 
-echo Creating clean base from origin/gmaster...
-git reset --hard origin/gmaster
-echo `git rev-parse HEAD` origin/gmaster >> $VTEMP
+echo Creating clean base from origin/$BASELINE...
+git reset --hard origin/$BASELINE
+echo `git rev-parse HEAD` origin/$BASELINE >> $VTEMP
 
 echo Merging feature branches...
 for branch in master gupdater $BRANCHES; do

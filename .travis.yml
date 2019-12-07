@@ -17,8 +17,5 @@ env:
     - FAUCET_TEST_IMG=faucet/tests
     - MATRIX_SHARDS=6
 script:
-  - date
-matrix:
-  include:
-jobs:
-  include:
+  - gutil/update_gmaster.sh
+  - gutil/build_package.sh allow
