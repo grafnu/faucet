@@ -1,16 +1,21 @@
 #!/bin/bash -e
 
-source gutil/update_gmaster.cfg
-
 TMP_SH=/tmp/update_gmaster.sh
 BASE=`git rev-parse --show-toplevel`
 BASE_SH=$BASE/update_gmaster.sh
 VTEMP=/tmp/GVERSION
-VFILE=$BASE/$PROJ/GVERSION
 date > $VTEMP
 UPSTREAM=`git rev-parse --abbrev-ref gupdater@{upstream}`
 REPO=${UPSTREAM%/*}
 BASELINE=gmaster
+FFILE=/tmp/FEATURES
+cp $BASE/gutil/FEATURES $FFILE
+
+name_line=`fgrep name= $BASE/setup.py`
+name_line=${name_line#*\"}
+PROJ=${name_line%\"*}
+echo Mined project $PROJ from setup.py
+VFILE=$BASE/$PROJ/GVERSION
 
 if [ $0 != $TMP_SH ]; then
     echo Running out of $TMP_SH to mask local churn...
@@ -20,6 +25,10 @@ fi
 
 if [ "$1" == reset ]; then
     echo Reset to using master as baseline...
+    BASELINE=master
+fi
+
+if [ "$1" == reset ]; then
     BASELINE=master
 fi
 
@@ -40,11 +49,11 @@ fi
 ORIGIN=`git remote -v | egrep ^$REPO | fgrep fetch | awk '{print $2}'`
 echo upstream $ORIGIN >> $VTEMP
 
-echo Fetching remote repos...
+echo Fetching remote repo...
 git fetch $REPO
 
 LOCAL=`git rev-parse gupdater`
-echo $LOCAL gupdater >> $VTEMP
+echo gupdater $LOCAL >> $VTEMP
 REMOTE=`git rev-parse $REPO/gupdater`
 if [ "$LOCAL" != "$REMOTE" ]; then
     echo gupdater out of sync with upstream $REPO/gupdater
@@ -56,16 +65,23 @@ git checkout gmaster
 
 echo Creating clean base from origin/$BASELINE...
 git reset --hard origin/$BASELINE
-echo `git rev-parse HEAD` origin/$BASELINE >> $VTEMP
+echo $BASELINE `git rev-parse HEAD`>> $VTEMP
 
-echo Merging feature branches...
-for branch in master gupdater $BRANCHES; do
-    echo Merging $REPO/$branch...
-    git merge --no-edit $REPO/$branch
-    echo `git rev-parse $REPO/$branch` $branch >> $VTEMP
+echo Merging feature targets...
+cat $FFILE | while read hash target; do
+    bhash=`git rev-list -n 1 $target`
+    if [ "$bhash" != "$hash" ]; then
+        echo Update hash mismatch for $target
+        echo Expected $hash != found $bhash
+        echo Either use a tagged target or update hash.
+        false
+    fi
+    echo Merging $hash from $target
+    git merge --no-edit $hash
+    echo $hash $target >> $VTEMP
 done
 
-echo `git rev-parse HEAD` gmaster >> $VTEMP
+echo gmaster `git rev-parse HEAD` >> $VTEMP
 cp $VTEMP $VFILE
 git add $VFILE
 git commit -m "Version assembled $(date)"
