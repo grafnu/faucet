@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 
 TMP_SH=/tmp/update_gmaster.sh
 BASE=`git rev-parse --show-toplevel`
@@ -12,8 +12,8 @@ FFILE=/tmp/FEATURES
 cp $BASE/gutil/FEATURES $FFILE
 
 name_line=`fgrep name= $BASE/setup.py`
-name_line=${name_line#*\"}
-PROJ=${name_line%\"*}
+name_line=${name_line#*\'}
+PROJ=${name_line%\'*}
 echo Mined project $PROJ from setup.py
 VFILE=$BASE/$PROJ/GVERSION
 
