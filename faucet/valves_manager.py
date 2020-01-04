@@ -176,6 +176,9 @@ class ValvesManager:
             # Only pick a new root if the current one is unhealthy.
             if self.meta_dp_state.stack_root_name not in healthy_stack_roots_names:
                 new_stack_root_name = healthy_stack_roots_names[0]
+        elif self.meta_dp_state.stack_root_name:
+            # Keep old stack root if available, to avoid churn
+            new_stack_root_name = self.meta_dp_state.stack_root_name
         else:
             # Pick the first candidate if no roots are healthy
             new_stack_root_name = candidate_stack_roots_names[0]
