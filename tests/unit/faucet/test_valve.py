@@ -515,6 +515,10 @@ vlans:
         """Test LACP comes up."""
         test_port = 1
         labels = self.port_labels(test_port)
+        learn_labels = {
+            'vid': 0x100,
+            'eth_src' self.P1_V100_MAC
+        }
         self.assertEqual(
             1, int(self.get_prom('port_lacp_state', labels=labels)))
         # Ensure LACP packet sent.
@@ -528,8 +532,11 @@ vlans:
             'actor_state_synchronization': 1})
         self.assertEqual(
             3, int(self.get_prom('port_lacp_state', labels=labels)))
+        print('before_learn', self.get_prom('learned_l2_port', labels=learn_labels))
         self.learn_hosts()
+        print('after_learn', self.get_prom('learned_l2_port', labels=learn_labels))
         self.verify_expiry()
+        print('after_expiry', self.get_prom('learned_l2_port', labels=learn_labels))
 
 
 class ValveMirrorTestCase(ValveTestBases.ValveTestBig):
