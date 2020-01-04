@@ -391,6 +391,20 @@ class Port(Conf):
         """Return True if LLDP beacon enabled on this port."""
         return self.lldp_beacon and self.lldp_beacon.get('enable', False)
 
+    def lacp_state_snapshot(self):
+        """Return a snapshot of necessary dyn state"""
+        return {
+            'dyn_lacp_up': self.dyn_lacp_up,
+            'dyn_last_updated_time': self.dyn_lap_updated_time,
+            'dyn_last_lacp_pkt': self.dyn_last_lacp_pkt
+        }
+
+    def restore_lacp_state(self, state):
+        """Restore dyn state from a saved snapshot"""
+        self.lacp_update(state['dyn_lacp_up'],
+                         state['dyn_last_updated_time'],
+                         state['dyn_last_lacp_pkt'])
+
     def lacp_update(self, lacp_up, now=None, lacp_pkt=None):
         self.dyn_lacp_up = 1 if lacp_up else 0
         self.dyn_lacp_updated_time = now
