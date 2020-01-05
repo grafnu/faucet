@@ -517,7 +517,7 @@ class Valve:
                 ofmsgs_by_valve[self].extend(self.port_delete(port_no))
             ofmsgs_by_valve[self].extend(self.port_add(port_no))
             if saved_lacp_state:
-                port.restore_lacp_state(saved_port_state)
+                port.restore_lacp_state(saved_lacp_state)
                 self.logger.info('%s lacp state restored to %s' % (port, port.lacp_state()))
         else:
             ofmsgs_by_valve[self].extend(self.port_delete(port_no))
