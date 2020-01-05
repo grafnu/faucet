@@ -510,15 +510,15 @@ class Valve:
             reason == valve_of.ofp.OFPPR_ADD or
             (reason == valve_of.ofp.OFPPR_MODIFY and port_status))
         if new_port_status:
-            saved_lacp_state = None
+            lacp_state = port.snapshot_lacp_state()
             if port.dyn_phys_up:
                 self.logger.info('%s already up, assuming flap as missing down event' % port)
-                saved_lacp_state = port.lacp_state_snapshot()
                 ofmsgs_by_valve[self].extend(self.port_delete(port_no))
             ofmsgs_by_valve[self].extend(self.port_add(port_no))
-            if saved_lacp_state:
-                port.restore_lacp_state(saved_lacp_state)
-                self.logger.info('%s lacp state restored to %s' % (port, port.lacp_state()))
+            if lacp_state['dyn_lacp_up']:
+                self.logger.info('%s restore lacp up' % port)
+                ofmsgs_by_valve[self].extend(self.lacp_up(
+                    port, lacp_state['dyn_lacp_updated_time'], lacp_state['dyn_last_lacp_pkt']))
         else:
             ofmsgs_by_valve[self].extend(self.port_delete(port_no))
         return ofmsgs_by_valve

@@ -391,7 +391,7 @@ class Port(Conf):
         """Return True if LLDP beacon enabled on this port."""
         return self.lldp_beacon and self.lldp_beacon.get('enable', False)
 
-    def lacp_state_snapshot(self):
+    def snapshot_lacp_state(self):
         """Return a snapshot of necessary dyn state"""
         return {
             'dyn_lacp_up': self.dyn_lacp_up,
