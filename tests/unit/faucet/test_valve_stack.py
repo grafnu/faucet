@@ -104,13 +104,40 @@ dps:
             msg='mcast packet multiply flooded externally on root')
 
 
-class ValveStackRedundantLink(ValveTestBases.ValveTestSmall):
-    """Check stack situations with a redundant link"""
+class ValveStackLoopTest(ValveTestBases.ValveTestSmall):
+    """Test base class for loop stack config"""
 
     CONFIG = STACK_LOOP_CONFIG
 
     def setUp(self):
         self.setup_valve(self.CONFIG)
+
+    def validate_flooding(self, rerouted=False, portup=True):
+        vid = self.V100
+        self.validate_flood(1, vid, 1, False, 'flooded out input stack port')
+        self.validate_flood(1, vid, 2, portup, 'not flooded to stack root')
+        self.validate_flood(1, vid, 3, portup, 'not flooded to external host')
+        self.validate_flood(2, vid, 1, rerouted, 'flooded out other stack port')
+        self.validate_flood(2, vid, 2, False, 'flooded out input stack port')
+        self.validate_flood(2, vid, 3, True, 'not flooded to external host')
+        vid = 0
+        self.validate_flood(3, vid, 1, rerouted, 'flooded out inactive port')
+        self.validate_flood(3, vid, 2, True, 'not flooded to stack root')
+        self.validate_flood(3, vid, 3, False, 'flooded out hairpin')
+
+    def learn_stack_hosts(self):
+        """Learn some hosts."""
+        for _ in range(2):
+            self.rcv_packet(3, 0, {
+                'eth_src': self.P1_V100_MAC,
+                'eth_dst': self.P2_V100_MAC,
+                'vid': self.V100,
+                'ipv4_src': '10.0.0.1',
+                'ipv4_dst': '10.0.0.2'}, dp_id=1)
+
+
+class ValveStackRedundantLink(ValveStackLoopTest):
+    """Check stack situations with a redundant link"""
 
     def test_loop_protect(self):
         """Basic loop protection check"""
@@ -511,36 +538,8 @@ class ValveStackGraphUpdateTestCase(ValveTestBases.ValveTestSmall):
         verify_stack_learn_edges(2, edges[0], self.assertTrue)
 
 
-class ValveStackGraphBreakTestCase(ValveTestBases.ValveTestSmall):
+class ValveStackGraphBreakTestCase(ValveStackLoopTest):
     """Valve test for updating the stack graph."""
-
-    CONFIG = STACK_LOOP_CONFIG
-
-    def setUp(self):
-        self.setup_valve(self.CONFIG)
-
-    def validate_in_out(self, in_port, out_port, expected, msg):
-        bcast_match = {
-            'in_port': in_port,
-            'eth_dst': mac.BROADCAST_STR,
-            'vlan_vid': 0x1064 if in_port < 3 else 0,
-            'eth_type': 0x800,
-        }
-        if expected:
-            self.assertTrue(self.table.is_output(bcast_match, port=out_port), msg=msg)
-        else:
-            self.assertFalse(self.table.is_output(bcast_match, port=out_port), msg=msg)
-
-    def validate_flooding(self, rerouted=False, portup=True):
-        self.validate_in_out(1, 1, False, 'flooded out input stack port')
-        self.validate_in_out(1, 2, portup, 'not flooded to stack root')
-        self.validate_in_out(1, 3, portup, 'not flooded to external host')
-        self.validate_in_out(2, 1, rerouted, 'flooded out other stack port')
-        self.validate_in_out(2, 2, False, 'flooded out input stack port')
-        self.validate_in_out(2, 3, True, 'not flooded to external host')
-        self.validate_in_out(3, 1, rerouted, 'flooded out inactive port')
-        self.validate_in_out(3, 2, True, 'not flooded to stack root')
-        self.validate_in_out(3, 3, False, 'flooded out hairpin')
 
     def test_update_stack_graph(self):
         """Test stack graph port UP and DOWN updates"""
@@ -568,18 +567,18 @@ class ValveStackGraphBreakTestCase(ValveTestBases.ValveTestSmall):
         port = self.valve.dp.ports[1]
 
         self.activate_all_ports()
-        self.validate_flooding(portup=True)
+        self.validate_flooding()
 
         # Deactivating the port stops simulating LLDP beacons.
         self.deactivate_stack_port(port, packets=1)
 
         # Should still work after only 1 interval (3 required by default)
-        self.validate_flooding(portup=True)
+        self.validate_flooding()
 
         # Wait for 3 more cycles, so should fail now.
         self.trigger_all_ports(packets=3)
 
-        # Validate expected normal behavior with the portup=False.
+        # Validate expected normal behavior with the port down.
         self.validate_flooding(portup=False)
 
         # Restore everything and set max_lldp_lost to 100.
@@ -588,15 +587,15 @@ class ValveStackGraphBreakTestCase(ValveTestBases.ValveTestSmall):
         new_config = self._set_max_lldp_lost(100)
         self.update_config(new_config, reload_expected=False)
         self.activate_all_ports()
-        self.validate_flooding(portup=True)
+        self.validate_flooding()
 
         # Like above, deactivate the port (stops LLDP beacons).
         self.deactivate_stack_port(port, packets=10)
 
         # After 10 packets (more than before), it should still work.
-        self.validate_flooding(portup=True)
+        self.validate_flooding()
 
-        # But, after 100 more it should now fail b/c limit is set to 100.
+        # But, after 100 more port should be down b/c limit is set to 100.
         self.trigger_all_ports(packets=100)
         self.validate_flooding(portup=False)
 
