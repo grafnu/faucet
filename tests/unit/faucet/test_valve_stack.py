@@ -115,7 +115,7 @@ class ValveStackChainTest(ValveTestBases.ValveTestSmall):
 
     def setUp(self):
         """Setup basic loop config"""
-        self.setup_valve(self.CONFIG, log_stdout=True)
+        self.setup_valve(self.CONFIG)
 
     def learn_stack_hosts(self):
         """Learn some hosts."""
@@ -160,7 +160,12 @@ class ValveStackChainTest(ValveTestBases.ValveTestSmall):
 
         self.learn_stack_hosts()
 
-        self.assertFalse(self._unicast_to(CONTROLLER_PORT), 'learn from unicast')
+        self.assertFalse(self._unicast_to(1), 'learned unicast to stack root')
+        self.assertFalse(self._unicast_to(2), 'learned unicast to stack root')
+        self.assertTrue(self._unicast_to(3), 'learned unicast away from stack root')
+        self.assertFalse(self._unicast_to(CONTROLLER_PORT), 'no learn from unicast')
+        self.assertFalse(self._learning_from_bcast(1), 'learn from stack root broadcast')
+        self.assertFalse(self._learning_from_bcast(4), 'learn from access port broadcast')
 
     def test_stack_learn_edge(self):
         self.activate_all_ports()
