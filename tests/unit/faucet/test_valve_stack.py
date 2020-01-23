@@ -184,7 +184,7 @@ class ValveStackLoopTest(ValveTestBases.ValveTestSmall):
 
     def setUp(self):
         """Setup basic loop config"""
-        self.setup_valve(self.CONFIG, log_stdout=True)
+        self.setup_valve(self.CONFIG)
 
     def validate_flooding(self, rerouted=False, portup=True):
         """Validate the flooding state of the stack"""
