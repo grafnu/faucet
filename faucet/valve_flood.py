@@ -578,9 +578,12 @@ class ValveFloodStackManagerBase(ValveFloodManager):
 
     def _edge_learn_port_towards(self, pkt_meta, edge_dp):
         if pkt_meta.vlan.edge_learn_stack_root:
-            return self.shortest_path_root(edge_dp.name)
+            port = self.shortest_path_root(edge_dp.name)
         else:
-            return self.shortest_path_port(edge_dp.name)
+            port = self.shortest_path_port(edge_dp.name)
+        self.logger.info('edge_learn %s, sw %s, in port %s, learned %s' % (
+            pkt_meta.vlan.edge_learn_stack_root, edge_dp.name, pkt_meta.port, port))
+        return port
 
     def edge_learn_port(self, other_valves, pkt_meta):
         """
