@@ -554,11 +554,13 @@ class ValveFloodStackManagerBase(ValveFloodManager):
     def shortest_path_root(self, edge_dp_name):
         """Return the port along the shortest path to/from root for edge learning"""
         path_to_root = self.dp_shortest_path_to_root()
+        self.logger.info('edge_learn path_to_root: %s' % path_to_root)
         if not path_to_root:
             return self.shortest_path_port(edge_dp_name)
 
         this_dp = path_to_root[0]
         path_from_edge = self.dp_shortest_path_to_root(edge_dp_name)
+        self.logger.info('edge_learn path_from_edge: %s' % path_from_edge)
 
         # If this is the edge switch, then learn using default algorithm.
         if not path_from_edge or this_dp == path_from_edge[0]:
@@ -570,10 +572,12 @@ class ValveFloodStackManagerBase(ValveFloodManager):
             away_up_ports = [port for port in
                              self._canonical_stack_up_ports(self.away_from_root_stack_ports)
                              if port.stack['dp'] == away_dp]
+            self.logger.info('edge_learn away_up_ports %s: %s' % (away_dp, away_up_ports))
             return away_up_ports[0] if away_up_ports else None
 
         # If not, then head towards the root.
         towards_up_ports = self._canonical_stack_up_ports(self.towards_root_stack_ports)
+        self.logger.info('edge_learn towards_up_ports: %s' % towards_up_ports)
         return towards_up_ports[0] if towards_up_ports else None
 
     def _edge_learn_port_towards(self, pkt_meta, edge_dp):
