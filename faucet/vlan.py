@@ -113,9 +113,9 @@ class VLAN(Conf):
         # If False, don't check that IP packets have a payload (OVS trace/tutorial requires False).
         'reserved_internal_vlan': False,
         # If True, forward packets from the VLAN table to the VLAN_ACL table matching the VID
-        'dot1x_assigned' : False,
+        'dot1x_assigned': False,
         # If True, this VLAN may be dynamically added withTunnel-Private-Group-ID radius attribute.
-        'edge_learn_stack_root' : False,
+        'edge_learn_stack_root': False,
         # If True, this VLAN will learn flows through the stack root, following forwarding path.
         }
 
