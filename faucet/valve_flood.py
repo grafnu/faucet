@@ -571,9 +571,6 @@ class ValveFloodStackManagerBase(ValveFloodManager):
             away_dp = path_from_edge[path_from_edge.index(this_dp) - 1]
             all_away_up_ports = self._canonical_stack_up_ports(self.away_from_root_stack_ports)
             self.logger.info('edge_learn all_away_up_ports: %s' % all_away_up_ports)
-            for port in all_away_up_ports:
-                self.logger.info('edge_learn %s %s %s' % (
-                    port.stack['dp'], type(port.stack['dp']), type(away_dp)))
             away_up_ports = [port for port in all_away_up_ports if port.stack['dp'].name == away_dp]
             self.logger.info('edge_learn away_up_ports %s: %s' % (away_dp, away_up_ports))
             return away_up_ports[0] if away_up_ports else None
