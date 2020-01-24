@@ -567,9 +567,8 @@ class ValveFloodStackManagerBase(ValveFloodManager):
         # If this switch is along the path towards the edge, then head away.
         if this_dp in path_from_edge:
             away_dp = path_from_edge[path_from_edge.index(this_dp) - 1]
-            away_up_ports = [port for port in
-                             self._canonical_stack_up_ports(self.away_from_root_stack_ports)
-                             if port.stack['dp'] == away_dp]
+            all_away_up_ports = self._canonical_stack_up_ports(self.away_from_root_stack_ports)
+            away_up_ports = [port for port in all_away_up_ports if port.stack['dp'].name == away_dp]
             return away_up_ports[0] if away_up_ports else None
 
         # If not, then head towards the root.
