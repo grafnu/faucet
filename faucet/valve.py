@@ -881,7 +881,7 @@ class Valve:
                     max_len=128))
 
             if port.lacp:
-                ofmsgs.extend(self.lacp_update(port, False, cold_start=True))
+                ofmsgs.extend(self.lacp_update(port, False, from_port_add=True))
                 if port.lacp_active:
                     ofmsgs.extend(self._lacp_actions(port.dyn_last_lacp_pkt, port))
 
@@ -1052,7 +1052,7 @@ class Valve:
         return prev_actor_state != new_actor_state
 
     def lacp_update(self, port, lacp_up, now=None,
-                    lacp_pkt=None, other_valves=None, cold_start=False):
+                    lacp_pkt=None, other_valves=None, from_port_add=False):
         """
         Update the port's LACP states and enables/disables packets
             from the link to be processed further through the pipeline
@@ -1063,14 +1063,14 @@ class Valve:
             now (float): The current time
             lacp_pkt (PacketMeta): The received LACP packet
             other_valves (list): List of other valves (in the stack)
-            cold_state (bool): Whether Faucet is being cold started or not
+            from_port_add (bool): If this is from a new port add
         Returns:
             ofmsgs
         """
         ofmsgs = []
         updated = self.lacp_update_actor_state(port, lacp_up, now, lacp_pkt)
         select_updated = self.lacp_update_port_selection_state(port, other_valves)
-        if updated or select_updated or cold_start:
+        if updated or select_updated or from_port_add:
             if updated:
                 self._reset_lacp_status(port)
             if port.is_port_selected() and port.is_actor_up():
