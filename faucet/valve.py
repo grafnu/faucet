@@ -846,6 +846,7 @@ class Valve:
             self.logger.info('%s (%s) %s' % (port, port.description, log_msg))
 
             if not port.running():
+                self.logger.info('TAP %s not running', port)
                 continue
 
             for manager in self._get_managers():
@@ -882,6 +883,7 @@ class Valve:
 
             if port.lacp:
                 ofmsgs.extend(self.lacp_update(port, False, cold_start=cold_start))
+                self.logger.info('TAP %s lacp %s %s', port, port.lacp_active, cold_start)
                 if port.lacp_active:
                     ofmsgs.extend(self._lacp_actions(port.dyn_last_lacp_pkt, port))
 
