@@ -1078,6 +1078,7 @@ class Valve:
         ofmsgs = []
         updated = self.lacp_update_actor_state(port, lacp_up, now, lacp_pkt)
         select_updated = self.lacp_update_port_selection_state(port, other_valves)
+        self.logger.info('TAP lacp_update %s %s %s', updated, select_update, cold_start)
         if updated or select_updated or cold_start:
             if updated:
                 self._reset_lacp_status(port)
