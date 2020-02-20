@@ -1056,7 +1056,7 @@ class Valve:
         prev_actor_state = port.actor_state()
         new_actor_state = port.lacp_update(lacp_up, now=now, lacp_pkt=lacp_pkt)
         self.logger.info('TAP update_actor_state %s %s, %s -> %s' % (
-            lacp_up, lacp_pkt, prev_actor_state, new_actor_state))
+            lacp_up, bool(lacp_pkt), prev_actor_state, new_actor_state))
         if prev_actor_state != new_actor_state:
             self.logger.info('LAG %u %s actor state %s (previous state %s)' % (
                 port.lacp, port, port.actor_state_name(new_actor_state),
