@@ -849,6 +849,7 @@ class Valve:
             port = self.dp.ports[port_num]
             port.dyn_phys_up = True
             self.logger.info('%s (%s) %s' % (port, port.description, log_msg))
+            self.logger.info('TAP port_add %s lacp %s' % (port, port.lacp))
 
             if not port.running():
                 continue
