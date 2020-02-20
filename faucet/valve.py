@@ -1034,8 +1034,8 @@ class Valve:
         else:
             port.deselect_port()
         new_state = port.lacp_port_state()
-        self.logger.info('TAP update_port_selection %s %s, %s -> %s', self.dp.dp_id, nominated_dpid,
-                         prev_state, new_state)
+        self.logger.info('TAP update_port_selection %s %s, %s -> %s' % (
+            self.dp.dp_id, nominated_dpid, prev_state, new_state))
         if new_state != prev_state:
             self.logger.info('LAG %u %s %s (previous state %s)' % (
                 port.lacp, port, port.port_role_name(new_state),
@@ -1055,8 +1055,8 @@ class Valve:
         """
         prev_actor_state = port.actor_state()
         new_actor_state = port.lacp_update(lacp_up, now=now, lacp_pkt=lacp_pkt)
-        self.logger.info('TAP update_actor_state %s %s, %s -> %s', lacp_up, lacp_pkt,
-                         prev_actor_state, new_actor_state)
+        self.logger.info('TAP update_actor_state %s %s, %s -> %s' % (
+            lacp_up, lacp_pkt, prev_actor_state, new_actor_state))
         if prev_actor_state != new_actor_state:
             self.logger.info('LAG %u %s actor state %s (previous state %s)' % (
                 port.lacp, port, port.actor_state_name(new_actor_state),
@@ -1082,7 +1082,8 @@ class Valve:
         ofmsgs = []
         updated = self.lacp_update_actor_state(port, lacp_up, now, lacp_pkt)
         select_updated = self.lacp_update_port_selection_state(port, other_valves)
-        self.logger.info('TAP lacp_update %s %s %s', updated, select_updated, cold_start)
+        self.logger.info('TAP lacp_update %s %s %s' % (
+            updated, select_updated, cold_start))
         if updated or select_updated or cold_start:
             if updated:
                 self._reset_lacp_status(port)
