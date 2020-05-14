@@ -78,7 +78,7 @@ class CheckDebianPackageTestCase(unittest.TestCase): # pytype: disable=module-at
                 self.assertIn(dpkg_name, self.faucet_dpkg_deps)
 
     # Temporarily diabling b/c of pyyaml build problems for rodete.
-    def x_test_pip_reqs_versions_match_deb_package(self):
+    def test_pip_reqs_versions_match_deb_package(self):
         """Test pip requirements versions match debian package dependencies."""
 
         for pip_req in parse_requirements(self.requirements_file,
