@@ -3243,22 +3243,9 @@ vlans:
             second_host_dst_match, table_id=self._ETH_DST_TABLE)
 
 
-class FaucetRyuConfigExportTest(FaucetTest):
-
-    def test_ryu_config(self):
-        print('TAP TAP TAP')
-        print(self.scrape_prometheus('ryu_config'))
-        self.assertEqual(1, self.scrape_prometheus_var('ryu_config', {'key': 'echo_request_interval', 'value': '5'}))
-        self.assertEqual(0, self.scrape_prometheus_var('ryu_config', {'key': 'echo_request_interval', 'value': '5'}))
-        self.assertFalse(True)
-        self.assertTrue(True)
-
-
 class FaucetConfigReloadTest(FaucetConfigReloadTestBase):
 
     def test_add_unknown_dp(self):
-        self.assertFalse(True)
-        self.assertTrue(True)
         conf = self._get_faucet_conf()
         conf['dps']['unknown'] = {
             'dp_id': int(self.rand_dpid()),
