@@ -1856,8 +1856,7 @@ class FaucetRyuConfigExportTest(FaucetUntaggedTest):
 
     def test_ryu_config(self):
         print('TAP TAP TAP')
-        print(self.scrape_prometheus(controller='faucet', var='of_dp_desc_stats'))
-        print(self.scrape_prometheus('ryu_config'))
+        print(self.scrape_prometheus(var='ryu_config'))
         self.assertEqual(0, 1)
 
 
