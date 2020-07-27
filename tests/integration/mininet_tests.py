@@ -3243,7 +3243,7 @@ vlans:
             second_host_dst_match, table_id=self._ETH_DST_TABLE)
 
 
-class FaucetRyuConfigExportTest(FaucetTest):
+class FaucetRyuConfigExportTest(FaucetConfigReloadTestBase):
 
     def test_ryu_config(self):
         print('TAP TAP TAP')
