@@ -3243,6 +3243,13 @@ vlans:
             second_host_dst_match, table_id=self._ETH_DST_TABLE)
 
 
+class FaucetRyuConfigExportTest(FaucetTest):
+
+    def test_ryu_config(self):
+        print('TAP TAP TAP')
+        print(self.scrape_prometheus('ryu_config'))
+
+
 class FaucetConfigReloadTest(FaucetConfigReloadTestBase):
 
     def test_add_unknown_dp(self):
