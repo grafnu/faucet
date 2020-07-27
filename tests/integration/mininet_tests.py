@@ -3248,6 +3248,7 @@ class FaucetRyuConfigExportTest(FaucetTest):
     def test_ryu_config(self):
         print('TAP TAP TAP')
         print(self.scrape_prometheus('ryu_config'))
+        self.assertEqual(0, 1)
 
 
 class FaucetConfigReloadTest(FaucetConfigReloadTestBase):
