@@ -1856,7 +1856,6 @@ class FaucetSanityTest(FaucetUntaggedTest):
     """Sanity test - make sure test environment is correct before running all tess."""
 
     def test_ryu_config(self):
-        print('TAP TAP TAP')
         varstr = ', '.join(self.scrape_prometheus(var='ryu_config'))
         self.assertTrue('echo_request_interval"} 10.0' in varstr)
         self.assertTrue('maximum_unreplied_echo_requests"} 5.0' in varstr)
