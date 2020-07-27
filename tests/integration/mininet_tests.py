@@ -1852,6 +1852,15 @@ class FaucetUntaggedTcpIPv6IperfTest(FaucetUntaggedTest):
             self.flap_all_switch_ports()
 
 
+class FaucetRyuConfigExportTest(FaucetUntaggedTest):
+
+    def test_ryu_config(self):
+        print('TAP TAP TAP')
+        print(self.scrape_prometheus(controller='faucet', var='of_dp_desc_stats'))
+        print(self.scrape_prometheus('ryu_config'))
+        self.assertEqual(0, 1)
+
+
 class FaucetSanityTest(FaucetUntaggedTest):
     """Sanity test - make sure test environment is correct before running all tess."""
 
@@ -3241,14 +3250,6 @@ vlans:
             restart=True, cold_start=True)
         self.wait_until_no_matching_flow(
             second_host_dst_match, table_id=self._ETH_DST_TABLE)
-
-
-class FaucetRyuConfigExportTest(FaucetConfigReloadTestBase):
-
-    def test_ryu_config(self):
-        print('TAP TAP TAP')
-        print(self.scrape_prometheus('ryu_config'))
-        self.assertEqual(0, 1)
 
 
 class FaucetConfigReloadTest(FaucetConfigReloadTestBase):
