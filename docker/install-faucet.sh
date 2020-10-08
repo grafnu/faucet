@@ -16,7 +16,7 @@ ${APK} add -U git ${BUILDDEPS}
 "${dir}/retrycmd.sh" "${PIP3} -r ${FROOT}/requirements.txt"
 ${PIP3} ${FROOT}
 
-if [ "$(uname -m)" = "x86_64" ]; then
+if [ "$(uname -m)" = "x86_64" -a -z "$SKIP_TESTS" ]; then
   (
   echo "Running unit tests"
   cd "${FROOT}"
